@@ -21,9 +21,9 @@ GC.test = 3;
 GC.fov = 45;
 GC.lookat = 1;
 
-function main(glcontext) {
+function main(glcontext, N) {
   gl = glcontext;
-  M = mazemake(3,3,3);
+  M = mazemake(N,N,N);
   //load files/images
   beginDemo();
 }

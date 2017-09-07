@@ -23,6 +23,10 @@
       background-color: grey;
       overflow: hidden;
     }
+
+    form {
+
+    }
       canvas {
         width: 100%;
         height: 100%;
@@ -31,6 +35,11 @@
     </style>
   </head>
   <body>
+    <form>
+      Enter the size of a cube side:<br>
+      <input type="text" name="N"><br>
+      <input type="submit" value="Submit">
+    </form>
     <canvas id="glcanvas">canvas not supported</canvas>
     <script id="FragmentShader2D" type="x-shader/x-fragment">
     	#ifdef GL_OES_standard_derivatives
@@ -117,9 +126,9 @@
         var gl = canvas.getContext("webgl");
         if (!gl)
           return;
-        main(gl);
+        main(gl,5);
       }
-      setup();
+      //setup();
     </script>
   </body>
 </html>

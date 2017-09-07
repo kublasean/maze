@@ -253,7 +253,6 @@ function mazeinit(wall) {
     a_normal: { buffer: getBuffer(norms), numComponents: 3 }
   }
   wall.numtri = verts.length / 3;
-
   wall.transforms = null;
   wall.verts = verts;
   wall.norms = norms;
