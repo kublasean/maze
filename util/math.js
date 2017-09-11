@@ -219,3 +219,11 @@ function getAngle(u) {
     return 180 + angle;
   return 360 - angle;
 }
+
+function ensureAngle(u) {
+  tmp = u % 360;
+  if (tmp < 0)
+    tmp += 360;
+  tmp = Math.abs(tmp);
+  return tmp;
+}

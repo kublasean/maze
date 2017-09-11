@@ -101,13 +101,14 @@ function Wall (shader,x,y,z) {
   this.shader =       shader;
   this.mvMatrix =     null;
   this.translation =  [[0,0,0],[0,0,0]];
-  this.rotation =     [ [[90,[1,0,0]], [0,[0,1,0]], [0,[1,0,0]]], [[0,[0,0,1]]] ];
+  this.rotation =     [ [[90,[1,0,0]], [0,[0,1,0]], [0,[0,0,1]]], [[0,[0,0,1]]] ];
   this.scale =        1;
   this.scale_arr =    [1,1,1];
   this.center =       [0,0,0];
   this.thickness = z;
   this.height = y;
   this.width = x;
+  this.updateList = [];
   //holds positions&orientations of walls to be drawn
   this.transforms = [];
 
@@ -127,6 +128,72 @@ function Wall (shader,x,y,z) {
     u_view: null,
     u_color: [0.614, 0.04136, 0.04136],
     u_lightPos: [0.0, 0.0, 3.0]
+  }
+  this.rotUpDown = 0;
+  this.rotLeftRight = 0;
+  this.rotUD = 0;
+  this.rotLR = 0;
+  this.rotMat = { mvMatrix:null }
+  this.rotate = function() {
+    rotmv = this.rotMat.mvMatrix;
+    function applyTrans(arr) {
+      tmp = [arr[0],arr[1],arr[2],1];
+      tmp1= rotmv.multiply(Matrix.create(tmp));
+      return tmp1.flatten().slice(0,3);
+    }
+    xaxis = [];
+    zaxis = [];
+    xsign = 1;
+    zsign = 1;
+    for (var i=0; i<3; i++) {
+      tmp = [0,0,0];
+      tmp[i] = 1;
+      res = applyTrans(tmp);
+      if (Math.abs(Math.abs(res[0])-1.0) < 0.01) {
+        xaxis = tmp;
+        if (res[0] < 0)
+          xsign = -1;
+      }
+      else if (Math.abs(Math.abs(res[2])-1.0) < 0.01) {
+        zaxis = tmp;
+        if (res[2] < 0)
+          zsign = -1;
+      }
+    }
+    if (xaxis.length == 0 || zaxis.length == 0) {
+      //console.log('ERROR');
+      //return;
+    }
+    //console.log(this.rotUD, this.rotLR);
+    step = 5; //must be a factor of 90 for shit to work
+    axis = [];
+    if (this.rotUpDown != 0 && this.rotLR == 0) {
+      axis = xaxis;
+      this.rotUD += step * this.rotUpDown;
+      step *= this.rotUpDown * xsign;
+    }
+    else if (this.rotLeftRight != 0 && this.rotUD == 0) {
+      axis = zaxis;
+      this.rotLR += step * this.rotLeftRight;
+      step *= this.rotLeftRight * zsign;
+    }
+    else {
+      axis = [1,0,0];
+      step = 0;
+    }
+    mvLoadIdentity(this);
+    mvTranslate([this.center[0]*-1,this.center[1]*-1,this.center[2]*-1], this);
+    mvRotate(step, axis, this.rotMat);
+    this.mvMatrix = this.rotMat.mvMatrix.x(this.mvMatrix);
+
+    if (this.rotLR % 90 == 0) {
+      this.rotLR = 0;
+      this.rotLeftRight = 0;
+    }
+    if (this.rotUD % 90 == 0) {
+      this.rotUD = 0;
+      this.rotUpDown = 0;
+    }
   }
 }
 
@@ -204,7 +271,7 @@ function mazeinit(wall) {
     wall.transforms.push(setwall(M.walls[i].x, M.walls[i].y,wall.width,wall.height));
   }
   //border
-  wall.transforms.push({
+  /*wall.transforms.push({
     sc: [M.Ncols,M.Nlayers,1],
     trans: [M.Ncols*wall.width/2.0,0,M.Nlayers*wall.width/2.0],
     rotz: 90,
@@ -227,7 +294,7 @@ function mazeinit(wall) {
     trans: [M.Ncols*wall.width, M.Nrows*wall.width/-2.0,M.Nlayers*wall.width/2.0],
     rotz: 90,
     rotx: 90
-  });
+  });*/
 
   //assemble into one massive model
   var verts = [];
@@ -258,9 +325,8 @@ function mazeinit(wall) {
   wall.norms = norms;
   wall.rotation[0][0][0] = 0;
   wall.rotation[0][1][0] = 0;
+  wall.rotation[0][2][0] = 0;
   wall.translation[0] = [0,0,0];
   wall.translation[1] = [0,0,0];
-  wall.center = [0,0,0];
-
-  console.log(wall);
+  wall.center = [M.Ncols*wall.width/2.0,M.Nrows*wall.width/-2.0,M.Nlayers*wall.width/2.0];
 }

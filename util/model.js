@@ -12,15 +12,28 @@ objectTransforms: function(model) {
   mvTranslate([model.center[0]*-1, model.center[1]*-1, model.center[2]*-1], model);
 },
 
+applyTranformation: function(model) {
+  if (model.verts.length != model.norms.length)
+    return;
+  for (var i=0; i<model.verts.length; i++) {
+    model.verts[i] = (model.mvMatrix.multiply(Matrix.create([model.verts[0],model.verts[1],model.verts[2],1]))).flatten.slice(0,3);
+    model.norms[i] = (model.mvMatrix.multiply(Matrix.create([model.norms[0],model.norms[1],model.norms[2],1]))).flatten.slice(0,3);
+  }
+  model.attribs.a_position.buffer = getBuffer(model.verts);
+  model.attribs.a_normal.buffer = getBuffer(model.norms);
+},
+
 draw: function(model, proj, view) {
   gl.useProgram(model.shader.program);
 
   model.uniforms.u_projection = new Float32Array(proj.flatten());
   model.uniforms.u_view = new Float32Array(view.flatten());
   //model.uniforms.u_camera = new Float32Array(camera.getMatrix().flatten());
-  mvLoadIdentity(model);
-  //mvMultMatrix(camera.getMatrix, model);
-  Model.objectTransforms(model);
+
+  //mvLoadIdentity(model);
+  //Model.objectTransforms(model);
+  //Model.applyTranformation(model);
+  //mvLoadIdentity(model);
 
   model.uniforms.u_model = new Float32Array(model.mvMatrix.flatten());
 
@@ -44,12 +57,12 @@ updateActions: function(model) {
 },
 
 updateWorldPosition: function(model) {
-  mvLoadIdentity(model);
-  console.log(model.center);
-  Model.objectTransforms(model);
-  var worldPosition = model.mvMatrix.multiply(Matrix.create(model.center));
-  //var worldPosition = (Matrix.create(model.center)).multiply(model.mvMatrix);
-  console.log(worldPosition);
+  //mvLoadIdentity(model);
+  //console.log(model.center);
+  //Model.objectTransforms(model);
+  center = [model.center[0],model.center[1],model.center[2],1];
+  var worldPosition = model.mvMatrix.multiply(Matrix.create(center));
+  //console.log(worldPosition);
   return worldPosition.flatten().slice(0,3);
 },
 

@@ -15,17 +15,25 @@ GC.height = null;
 GC.near = 0.001;
 GC.far = 200;
 GC.zoom = 1.0;
-GC.fps = 30;
+GC.fps = 60;
 GC.time = 0;
 GC.test = 3;
 GC.fov = 45;
 GC.lookat = 1;
 
-function main(glcontext, N) {
+function main(glcontext) {
   gl = glcontext;
+  newRound(3);
+}
+
+function exitScene() {
+  clearInterval(GC.game);
+  newRound(M.Nrows+1)
+}
+
+function newRound(N) {
   M = mazemake(N,N,N);
-  //load files/images
-  beginDemo();
+  beginDemo()
 }
 
 function beginDemo() {
@@ -40,7 +48,9 @@ function beginDemo() {
   mazeinit(W);
 
   //setup camera
-  camera = new Camera([W.width/2.0, -W.width/2.0+(M.Nrows-1)*-W.width, 0.8]);
+  camera = new Camera([0, -W.width*M.Nrows+(M.Nrows-1)*-W.width, 0.0]);
+  //camera = new Camera([-100,-100,0]);
+
   //setup event callbacks
   document.onkeydown = keyDown;
   document.onkeyup = keyUp;
@@ -52,8 +62,9 @@ function beginDemo() {
   gl.clearDepth(1.0);
   gl.enable(gl.DEPTH_TEST);
 
+  mvLoadIdentity(W.rotMat);
+  //mvTranslate([W.center[0]*-1,W.center[1]*-1,W.center[2]*-1], W);
   GC.game = setInterval(drawScene, 1000.0 / GC.fps);
-  canvasResize();
 }
 
 function drawScene() {
@@ -61,14 +72,20 @@ function drawScene() {
   canvasResize();
   GC.time += 0.001;
 
-  camera.update();
+  if (camera.update()) {
+    exitScene();
+    return;
+  }
+
   var proj = makePerspective(GC.fov,GC.width / GC.height, GC.near, GC.far);
   var view = makeLookAt(camera.position[0],camera.position[1],camera.position[2],
     camera.lookAt[0],camera.lookAt[1],camera.lookAt[2],
     0,0,1);
 
+  W.rotate()
   Model.draw(W, proj, view);
-  Model.draw(F, proj, view);
+  //W.center = Model.updateWorldPosition(W);
+  //Model.draw(F, proj, view);
 }
 
 function drawwall(w, proj, view) {

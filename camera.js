@@ -1,5 +1,5 @@
 function Camera (pos) {
-  this.lookAt = [0,0,-1];
+  this.lookAt = [0,0,0];
   this.position = pos;
   var rotx = 0;
   var rotz = 0;
@@ -9,19 +9,27 @@ function Camera (pos) {
     var rotStep = 4;
     //up
     if (keys[38]) {
-      rotx += rotStep;
+      //rotx += rotStep;
+      W.rotUpDown = -1;
     }
     //left
     if (keys[37]) {
-      rotz += rotStep;
+      //rotz += rotStep;
+      W.rotLeftRight = -1;
     }
     //right
     if (keys[39]) {
-      rotz -= rotStep;
+      //rotz -= rotStep;
+      W.rotLeftRight = 1;
     }
     //down
     if (keys[40]) {
-      rotx -= rotStep;
+      W.rotUpDown = 1;
+    }
+
+    //space (tmp reset key)
+    if (keys[32]) {
+      return true;
     }
 
     if (rotx > 360)
@@ -75,6 +83,7 @@ function Camera (pos) {
 
     tmp = mt.x(tmp);
     this.lookAt = tmp.flatten().slice(0,3);
+    return false;
   }
 }
 

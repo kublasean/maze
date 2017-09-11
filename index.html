@@ -35,11 +35,6 @@
     </style>
   </head>
   <body>
-    <form>
-      Enter the size of a cube side:<br>
-      <input type="text" name="N"><br>
-      <input type="submit" value="Submit">
-    </form>
     <canvas id="glcanvas">canvas not supported</canvas>
     <script id="FragmentShader2D" type="x-shader/x-fragment">
     	#ifdef GL_OES_standard_derivatives
@@ -128,7 +123,7 @@
           return;
         main(gl,5);
       }
-      //setup();
+      setup();
     </script>
   </body>
 </html>
