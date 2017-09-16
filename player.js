@@ -78,6 +78,7 @@ var PLAYER = {
       this.moveCount %= 60;
     }
     this.calcPosition(W);
+    W.uniforms.u_playerPos = this.wp[1];
     Model.draw(this,proj,view);
   },
   calcPosition: function(W) {
