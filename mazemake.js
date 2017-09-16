@@ -137,53 +137,53 @@ function Wall (shader,x,y,z) {
   this.rotate = function() {
     rotmv = this.rotMat.mvMatrix;
     function applyTrans(arr) {
-      tmp = [arr[0],arr[1],arr[2],1];
-      tmp1= rotmv.multiply(Matrix.create(tmp));
-      return tmp1.flatten().slice(0,3);
+      a = [arr[0],arr[1],arr[2],1];
+      b = rotmv.multiply(Matrix.create(a));
+      return b.flatten().slice(0,3);
     }
-    xaxis = [];
-    zaxis = [];
-    xsign = 1;
-    zsign = 1;
+    var xaxis = null;
+    var zaxis = null;
     for (var i=0; i<3; i++) {
-      tmp = [0,0,0];
-      tmp[i] = 1;
-      res = applyTrans(tmp);
+      tmp = $V([0,0,0]);
+      tmp.elements[i] = 1;
+      res = applyTrans(tmp.elements);
       if (Math.abs(Math.abs(res[0])-1.0) < 0.01) {
+        if (res[0] < 0) {
+          tmp = tmp.multiply(-1);
+        }
         xaxis = tmp;
-        if (res[0] < 0)
-          xsign = -1;
       }
       else if (Math.abs(Math.abs(res[2])-1.0) < 0.01) {
-        zaxis = tmp;
-        if (res[2] < 0)
-          zsign = -1;
+        if (res[2] < 0) {
+          tmp = tmp.multiply(-1);
+        }
+        zaxis = tmp
       }
     }
-    if (xaxis.length == 0 || zaxis.length == 0) {
+    if (xaxis == null || zaxis == null) {
       //console.log('ERROR');
-      //return;
     }
     //console.log(this.rotUD, this.rotLR);
     step = 5; //must be a factor of 90 for shit to work
-    axis = [];
+    axis = null;
     if (this.rotUpDown != 0 && this.rotLR == 0) {
       axis = xaxis;
       this.rotUD += step * this.rotUpDown;
-      step *= this.rotUpDown * xsign;
+      step *= this.rotUpDown;
     }
     else if (this.rotLeftRight != 0 && this.rotUD == 0) {
       axis = zaxis;
       this.rotLR += step * this.rotLeftRight;
-      step *= this.rotLeftRight * zsign;
+      step *= this.rotLeftRight;
     }
     else {
-      axis = [1,0,0];
+      axis = $V([1,0,0]);
       step = 0;
     }
+
     mvLoadIdentity(this);
     mvTranslate([this.center[0]*-1,this.center[1]*-1,this.center[2]*-1], this);
-    mvRotate(step, axis, this.rotMat);
+    mvRotate(step, axis.elements, this.rotMat);
     this.mvMatrix = this.rotMat.mvMatrix.x(this.mvMatrix);
 
     if (this.rotLR % 90 == 0) {
@@ -194,6 +194,7 @@ function Wall (shader,x,y,z) {
       this.rotUD = 0;
       this.rotUpDown = 0;
     }
+    return {x: xaxis, z: zaxis}
   }
 }
 

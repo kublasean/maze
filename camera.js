@@ -1,6 +1,7 @@
 function Camera (pos) {
   this.lookAt = [0,0,0];
   this.position = pos;
+  var base = pos;
   var rotx = 0;
   var rotz = 0;
 
@@ -55,30 +56,32 @@ function Camera (pos) {
     var dir = tmp.flatten().slice(0,3);
     dir = $V(dir).toUnitVector();
     //a arrow
+    PLAYER.movedir = 0;
     if (keys[65]) {
-      move = move.add(right.multiply(-step));;
+      //move = move.add(right.multiply(-step));
+      PLAYER.movedir = 1;
     }
     //w arrow
     if (keys[87]) {
-      move = move.add(dir.multiply(step));
+      //move = move.add(dir.multiply(step));
+      PLAYER.movedir = 2;
     }
     //d arrow
     if (keys[68]) {
-      move = move.add(right.multiply(step));;
+      //move = move.add(right.multiply(step));;
+      PLAYER.movedir = 3;
     }
     //s arrow
     if (keys[83]) {
-      move = move.add(dir.multiply(step*-1));
+      //move = move.add(dir.multiply(step*-1));
+      PLAYER.movedir = 4;
     }
 
     var sc = GC.test;
     var newPos = [sc*move.elements[0]+this.position[0],sc*move.elements[1]+this.position[1],sc*move.elements[2]+this.position[2]];
-  ///  if (positionOkay(this.position, newPos)) {
-      this.position = newPos;
-  //  }
-  //  else {
-    //  console.log("positionOkay == false");
-    //}
+    //var newPos = [this.base[0], this.base[1] + ]
+    this.position = newPos;
+
     var mt = Matrix.Translation($V(this.position)).ensure4x4();
 
     tmp = mt.x(tmp);

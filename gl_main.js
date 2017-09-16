@@ -48,10 +48,11 @@ function beginDemo() {
   mazeinit(W);
 
   //setup camera
+  PLAYER.init(shaderBUN,M,W);
   camera = new Camera([0, -W.width*M.Nrows+(M.Nrows-1)*-W.width, 0.0]);
   //camera = new Camera([-100,-100,0]);
 
-  PLAYER.init(shaderBUN,M,W);
+
   //setup event callbacks
   document.onkeydown = keyDown;
   document.onkeyup = keyUp;
@@ -83,8 +84,8 @@ function drawScene() {
     camera.lookAt[0],camera.lookAt[1],camera.lookAt[2],
     0,0,1);
 
-  W.rotate();
-  PLAYER.update(W.mvMatrix, proj, view);
+  var axis = W.rotate();
+  PLAYER.update(W, axis, proj, view);
   Model.draw(W, proj, view);
   //W.center = Model.updateWorldPosition(W);
   //Model.draw(F, proj, view);
