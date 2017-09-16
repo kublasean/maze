@@ -91,6 +91,9 @@ function mazemake(nl, nr, nc, width) {
       return [lay,row,col];
     },
     index: function(l,r,c) {
+      l = Math.min(l,nl-1);
+      r = Math.min(r,nr-1);
+      c = Math.min(c,nc-1);
       return l*nc*nr + r*nc + c;
     }
   }

@@ -58,23 +58,29 @@ var PLAYER = {
       }
       switch (i) {
         case 0: //x
-          newpos = M.index(lrc[0], lrc[1], lrc[2]+dir.elements[i]);
+          newpos = M.index(lrc[0], lrc[1], Math.max(lrc[2]+dir.elements[i],0));
           break;
         case 1: //y
-          newpos = M.index(lrc[0], lrc[1]+dir.elements[i]*-1, lrc[2]);
+
+          newpos = M.index(lrc[0], Math.max(lrc[1]+dir.elements[i]*-1,0), lrc[2]);
           break;
         case 2: //z
-          newpos = M.index(lrc[0]+dir.elements[i], lrc[1], lrc[2]);
+          newpos = M.index(Math.max(lrc[0]+dir.elements[i],0), lrc[1], lrc[2]);
           break;
       }
-      this.moveCount = step;
-      this.pos = newpos;
+      if (newpos >= 0 && newpos < M.Nrows*M.Ncols*M.Nlayers && positionOkay(this.pos, newpos)) {
+        this.moveCount = step;
+        this.pos = newpos;
+      }
     }
     else if (this.moveCount != 0) {
       this.moveCount += step;
       this.moveCount %= 60;
     }
-
+    this.calcPosition(W);
+    Model.draw(this,proj,view);
+  },
+  calcPosition: function(W) {
     lrc = M.getLRC(this.pos);
     offset = W.width / 2.0;
     lay = lrc[0]; row = lrc[1]; col = lrc[2];
@@ -91,6 +97,9 @@ var PLAYER = {
 
     this.mvMatrix = wcenter.mvMatrix.x(this.mvMatrix);
     this.mvMatrix = W.rotMat.mvMatrix.x(this.mvMatrix);
-    Model.draw(this,proj,view);
+
+    worldPosition = this.mvMatrix.multiply(Matrix.create([0,0,0,1]));
+    this.wp = worldPosition.flatten().slice(0,3);
   }
+
 }

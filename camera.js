@@ -2,6 +2,8 @@ function Camera (pos) {
   this.lookAt = [0,0,0];
   this.position = pos;
   var base = pos;
+  var firsttime = true;
+  var offset = 20.0;
   var rotx = 0;
   var rotz = 0;
 
@@ -77,10 +79,22 @@ function Camera (pos) {
       PLAYER.movedir = 4;
     }
 
-    var sc = GC.test;
-    var newPos = [sc*move.elements[0]+this.position[0],sc*move.elements[1]+this.position[1],sc*move.elements[2]+this.position[2]];
+    //var sc = GC.test;
+    //var newPos = [sc*move.elements[0]+this.position[0],sc*move.elements[1]+this.position[1],sc*move.elements[2]+this.position[2]];
     //var newPos = [this.base[0], this.base[1] + ]
-    this.position = newPos;
+    if (PLAYER.wp != null) {
+      if (firsttime == true) {
+        offset = PLAYER.wp[1] - base[1];
+        firsttime = false;
+      }
+      var goal = PLAYER.wp[1] - offset;
+      var diff = goal - this.position[1];
+      if (Math.abs(diff) > 0.5) {
+        this.position[1] += diff * 0.25;
+      }
+    }
+
+    //this.position = newPos;
 
     var mt = Matrix.Translation($V(this.position)).ensure4x4();
 
@@ -90,25 +104,6 @@ function Camera (pos) {
   }
 }
 
-/*---check if running into wall---*/
-function insideWall(oldCell, newCell, adjCell) {
-  return M.map.has(strwall(oldCell,adjCell)) && newCell == adjCell;
-}
-function checkAdjWalls(l,r,c,oldCell,newCell) {
-  if (insideWall(oldCell, newCell, M.index(l-1,r,c)))
-    return false;
-  if (insideWall(oldCell, newCell, M.index(l+1,r,c)))
-    return false;
-  if (insideWall(oldCell, newCell, M.index(l,r-1,c)))
-    return false;
-  if (insideWall(oldCell, newCell, M.index(l,r+1,c)))
-    return false;
-  if (insideWall(oldCell, newCell, M.index(l,r,c-1)))
-    return false;
-  if (insideWall(oldCell, newCell, M.index(l,r,c+1)))
-    return false;
-  return true;
-}
 function lrcFromWorld(pos) {
   var w = 5.0;
   var l, r, c;
@@ -118,17 +113,5 @@ function lrcFromWorld(pos) {
   return [l,r,c];
 }
 function positionOkay(oldPos, newPos) {
-  var old_lrc = lrcFromWorld(oldPos);
-  var new_lrc = lrcFromWorld(newPos);
-
-  if (!(-1<new_lrc[0] && -1<new_lrc[1] && -1<new_lrc[2]
-  && new_lrc[0]<M.Nlayers && new_lrc[1]<M.Nrows && new_lrc[2]<M.Ncols)) {
-    console.log("outofbounds");
-    return false;
-  }
-
-  var old_i = M.index(old_lrc[0], old_lrc[1], old_lrc[2]);
-  var new_i = M.index(new_lrc[0], new_lrc[1], new_lrc[2]);
-
-  return checkAdjWalls(old_lrc[0], old_lrc[1], old_lrc[2], old_i, new_i);
+  return !(M.map.has(strwall(oldPos,newPos)));
 }

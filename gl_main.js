@@ -37,10 +37,9 @@ function newRound(N) {
 }
 
 function beginDemo() {
-  shader2D  = new Shader("VertexShader2D", "FragmentShader2D");
   shaderBUN = new Shader("VertexShader_BUN", "FragmentShader_BUN");
-
-  W = new Wall(shaderBUN, 5.0,5.0,0.10);
+  shaderWALL = new Shader("VertexShader_WALL", "FragmentShader_WALL");
+  W = new Wall(shaderWALL, 5.0,5.0,0.10);
   F = new Wall(shaderBUN, 5.0,5.0,0.01);
   F.uniforms.u_color = [0.04136, 0.04136, 0.614];
   F.rotation[0][0][0] = 0;
