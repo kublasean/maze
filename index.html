@@ -105,7 +105,7 @@ uniform vec3 u_color;
 vec3 K_a = vec3(0.1745, 0.01175, 0.01175);
 //vec3 K_d = vec3(0.61424, 0.04136, 0.04136);
 vec3 K_s = vec3(0.727811, 0.626959, 0.626959);
-float n = 0.6;
+float n = 0.6; 
 
 void main(void){
   vec3 L = normalize(interpL);
@@ -115,8 +115,8 @@ void main(void){
   vec3 K_d = u_color;
 
   vec3 vColor = K_a + K_d*clamp(dot(N,L),0.0, 1.0) + K_s*pow(clamp(dot(R,V),0.0, 1.0),n);
-  if (v_alpha == 0.0)
-    discard;
+  //if (v_alpha == 0.0)
+    //discard;
   gl_FragColor = vec4(vColor, 1.0);
 }
 
@@ -149,9 +149,11 @@ void main(void) {
     interpV = -vert;
     interpN = vec3(u_view * u_model * vec4(a_normal, 0.0));
     v_alpha = 1.0;
-    if (world.y < u_playerPos) {
+		
+		v_alpha = clamp(world.y - u_playerPos, 0.0, 1.0);
+		/*if (world.y < u_playerPos) {
       v_alpha = 0.0;
-    }
+    }*/
 }
 </script>
     <script>

@@ -39,7 +39,7 @@ function newRound(N) {
 function beginDemo() {
   shaderBUN = new Shader("VertexShader_BUN", "FragmentShader_BUN");
   shaderWALL = new Shader("VertexShader_WALL", "FragmentShader_WALL");
-  W = new Wall(shaderWALL, 5.0,5.0,0.10);
+  W = new Wall(shaderWALL, 5.0,5.0,1.0);
   F = new Wall(shaderBUN, 5.0,5.0,0.01);
   F.uniforms.u_color = [0.04136, 0.04136, 0.614];
   F.rotation[0][0][0] = 0;
@@ -84,8 +84,9 @@ function drawScene() {
     0,0,1);
 
   var axis = W.rotate();
+	Model.draw(W, proj, view);
   PLAYER.update(W, axis, proj, view);
-  Model.draw(W, proj, view);
+  
   //W.center = Model.updateWorldPosition(W);
   //Model.draw(F, proj, view);
 }
