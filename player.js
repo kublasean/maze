@@ -78,20 +78,27 @@ var PLAYER = {
       this.moveCount += step;
       this.moveCount %= 60;
     }
-		
+
 		//draw whole chain
 		this.previous.push(this.pos);
+    var max_seg = 3;
+    while (this.previous.length > max_seg) {
+      this.previous.shift();
+    }
 		for (var i=0; i<this.previous.length; i++) {
 			this.pos = this.previous[i];
 			this.calcPosition(W);
 			W.uniforms.u_playerPos = this.wp[1];
-			this.uniforms.u_color[2] = (0.614 * this.previous.length) / i;
+			this.uniforms.u_color[2] = 1.0 * i / this.previous.length;
+      this.uniforms.u_color[1] = 1.0 * i / this.previous.length;
+      this.uniforms.u_color[0] = 1.0 * i / this.previous.length;
+      //console.log((0.614 * this.previous.length)/i);
 			Model.draw(this,proj,view);
 		}
 		this.pos = this.previous.pop();
   },
   calcPosition: function(W) {
-		
+
     lrc = M.getLRC(this.pos);
     offset = W.width / 2.0;
     lay = lrc[0]; row = lrc[1]; col = lrc[2];
