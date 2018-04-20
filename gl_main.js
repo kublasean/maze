@@ -7,7 +7,7 @@ var camera = null;
 var shader2D;
 var M = null; //maze
 var W = null; //wall
-
+var FW = null; //flat wall parts 
 //graphics context variables
 GC.mouseDown = false;
 GC.width = null;
@@ -20,7 +20,7 @@ GC.time = 0;
 GC.test = 3;
 GC.fov = 45;
 GC.lookat = 1;
-
+ 
 function main(glcontext) {
   gl = glcontext;
   newRound(3);
@@ -44,7 +44,7 @@ function beginDemo() {
   F.uniforms.u_color = [0.04136, 0.04136, 0.614];
   F.rotation[0][0][0] = 0;
   F.translation[0] = [F.width/2.0+(M.Ncols-1)*F.width,F.width/-2.0,-F.thickness];
-  mazeinit(W);
+  FW = mazeinit(W);
 
   //setup camera
   PLAYER.init(shaderBUN,M,W);
@@ -64,6 +64,7 @@ function beginDemo() {
   gl.enable(gl.DEPTH_TEST);
 
   mvLoadIdentity(W.rotMat);
+	mvLoadIdentity(FW.rotMat);
   //mvTranslate([W.center[0]*-1,W.center[1]*-1,W.center[2]*-1], W);
   GC.game = setInterval(drawScene, 1000.0 / GC.fps);
 }
@@ -84,6 +85,8 @@ function drawScene() {
     0,0,1);
 
   var axis = W.rotate();
+	FW.rotate();
+	Model.draw(FW, proj, view);
 	Model.draw(W, proj, view);
   PLAYER.update(W, axis, proj, view);
   

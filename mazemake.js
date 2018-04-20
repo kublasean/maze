@@ -129,7 +129,7 @@ function Wall (shader,x,y,z) {
     u_projection: null,
     u_model: null,
     u_view: null,
-    u_color: [0.614, 0.04136, 0.04136],
+    u_color: [249.0/255.0, 237.0/255.0, 139.0/255.0],
     u_lightPos: [0.0, 0.0, 3.0]
   }
   this.rotUpDown = 0;
@@ -300,12 +300,20 @@ function mazeinit(wall) {
     rotx: 90
   });*/
 
-  //assemble into one massive model
-  var verts = [];
-  var norms = [];
-
+  //assemble into two models: one for the flat part of walls, one for the sides
+  var side = {
+		verts: [],
+		norms: []
+	};
+	var flat = {
+		verts: [],
+		norms: []
+	};
+	//var verts = [];
+	//var norms = [];
   for (var i=0; i<wall.transforms.length; i++) {
-    wall.rotation[0][0][0] = wall.transforms[i].rotz;
+		var s=0, f=0;
+		wall.rotation[0][0][0] = wall.transforms[i].rotz;
     wall.rotation[0][1][0] = wall.transforms[i].rotx;
     wall.translation[1] = wall.transforms[i].trans;
     mvLoadIdentity(wall);
@@ -313,24 +321,58 @@ function mazeinit(wall) {
     for (var j=0; j<wall.verts.length; j+=3) {
       var v = wall.mvMatrix.x($M([wall.verts[j],wall.verts[j+1],wall.verts[j+2],1.0])).flatten().slice(0,3);
       var n = wall.mvMatrix.x($M([wall.norms[j],wall.norms[j+1],wall.norms[j+2],0.0])).flatten().slice(0,3);
-      //console.log(v,n);
-      verts.push(v[0],v[1],v[2]);
-      norms.push(n[0],n[1],n[2]);
+      
+			//verts.push(v[0],v[1],v[2]);
+			//norms.push(n[0],n[1],n[2]);
+			
+			if (j >= 3 * 6 * 2) {
+				flat.verts.push(v[0],v[1],v[2]);
+				flat.norms.push(n[0],n[1],n[2]);
+				s++;
+			}
+			else {
+				side.verts.push(v[0],v[1],v[2]);
+				side.norms.push(n[0],n[1],n[2]);
+				f++;
+			}
+			//console.log(s,f);
     }
   }
+	
+	//console.log(side);
 
   wall.attribs = {
-    a_position: { buffer: getBuffer(verts), numComponents: 3 },
-    a_normal: { buffer: getBuffer(norms), numComponents: 3 }
+    a_position: { buffer: getBuffer(side.verts), numComponents: 3 },
+    a_normal: { buffer: getBuffer(side.norms), numComponents: 3 }
   }
-  wall.numtri = verts.length / 3;
+  wall.numtri = side.verts.length / 3;
   wall.transforms = null;
-  wall.verts = verts;
-  wall.norms = norms;
+  wall.verts = side.verts;
+  wall.norms = side.norms;
   wall.rotation[0][0][0] = 0;
   wall.rotation[0][1][0] = 0;
   wall.rotation[0][2][0] = 0;
   wall.translation[0] = [0,0,0];
   wall.translation[1] = [0,0,0];
   wall.center = [M.Ncols*wall.width/2.0,M.Nrows*wall.width/-2.0,M.Nlayers*wall.width/2.0];
+	wall.uniforms.u_type = 1.0;
+	
+	var fW = new Wall(shaderWALL, 5.0,5.0,1.0);
+	fW.attribs = {
+    a_position: { buffer: getBuffer(flat.verts), numComponents: 3 },
+    a_normal: { buffer: getBuffer(flat.norms), numComponents: 3 }
+  }
+  fW.numtri = flat.verts.length / 3;
+  fW.transforms = null;
+  fW.verts = flat.verts;
+  fW.norms = flat.norms;
+  fW.rotation[0][0][0] = 0;
+  fW.rotation[0][1][0] = 0;
+  fW.rotation[0][2][0] = 0;
+  fW.translation[0] = [0,0,0];
+  fW.translation[1] = [0,0,0];
+  fW.center = [M.Ncols*wall.width/2.0,M.Nrows*wall.width/-2.0,M.Nlayers*wall.width/2.0];
+	fW.uniforms.u_color = [108.0/255.0, 204.0/255.0, 200.0/255.0];
+	fW.uniforms.u_type = 0.0;
+	return fW;
 }

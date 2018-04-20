@@ -14,20 +14,24 @@ function Camera (pos) {
     if (keys[38]) {
       //rotx += rotStep;
       W.rotUpDown = -1;
+			FW.rotUpDown = -1;
     }
     //left
     if (keys[37]) {
       //rotz += rotStep;
       W.rotLeftRight = -1;
+			FW.rotLeftRight = -1;
     }
     //right
     if (keys[39]) {
       //rotz -= rotStep;
       W.rotLeftRight = 1;
+			FW.rotLeftRight = 1;
     }
     //down
     if (keys[40]) {
       W.rotUpDown = 1;
+			FW.rotUpDown = 1;
     }
 
     //space (tmp reset key)

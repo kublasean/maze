@@ -5,6 +5,7 @@ var PLAYER = {
   mvMatrix: null,
   shader: null,
   numtri: null,
+	previous: [],
   attribs: {
     a_position: { buffer: null, numComponents: 3},
     a_normal: { buffer: null, numComponents: 3}
@@ -31,9 +32,9 @@ var PLAYER = {
   },
   update: function(W, axis, proj, view) {
     step = 10;
-
     if (this.movedir > 0 && this.moveCount == 0 && axis != null && axis.x != null && axis.z != null)
     {
+			this.previous.push(this.pos);
       dir = -1;
       lrc = M.getLRC(this.pos);
       switch (this.movedir) {
@@ -77,11 +78,20 @@ var PLAYER = {
       this.moveCount += step;
       this.moveCount %= 60;
     }
-    this.calcPosition(W);
-    W.uniforms.u_playerPos = this.wp[1];
-    Model.draw(this,proj,view);
+		
+		//draw whole chain
+		this.previous.push(this.pos);
+		for (var i=0; i<this.previous.length; i++) {
+			this.pos = this.previous[i];
+			this.calcPosition(W);
+			W.uniforms.u_playerPos = this.wp[1];
+			this.uniforms.u_color[2] = (0.614 * this.previous.length) / i;
+			Model.draw(this,proj,view);
+		}
+		this.pos = this.previous.pop();
   },
   calcPosition: function(W) {
+		
     lrc = M.getLRC(this.pos);
     offset = W.width / 2.0;
     lay = lrc[0]; row = lrc[1]; col = lrc[2];

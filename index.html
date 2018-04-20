@@ -99,12 +99,14 @@ precision mediump float;
 varying vec3 interpL;
 varying vec3 interpV;
 varying vec3 interpN;
-varying float v_alpha;
-uniform vec3 u_color;
+varying float v_worldy;
 
-vec3 K_a = vec3(0.1745, 0.01175, 0.01175);
-//vec3 K_d = vec3(0.61424, 0.04136, 0.04136);
-vec3 K_s = vec3(0.727811, 0.626959, 0.626959);
+uniform vec3 u_color;
+uniform float u_type; //1=side 0=flat
+uniform float u_playerPos;
+
+vec3 K_a = vec3(0.01745, 0.01175, 0.01175);
+vec3 K_s = vec3(0.0, 0.0, 0.0);
 float n = 0.6; 
 
 void main(void){
@@ -115,9 +117,16 @@ void main(void){
   vec3 K_d = u_color;
 
   vec3 vColor = K_a + K_d*clamp(dot(N,L),0.0, 1.0) + K_s*pow(clamp(dot(R,V),0.0, 1.0),n);
-  //if (v_alpha == 0.0)
-    //discard;
-  gl_FragColor = vec4(vColor, 1.0);
+  
+	if (u_type == 1.0 && v_worldy+3.1 < u_playerPos) {
+    discard;
+	}
+	if (u_type != 1.0 && v_worldy+3.1 < u_playerPos) {
+		discard;
+	}
+	//float alpha = clamp(u_playerPos - v_worldy+2.76, 0.0, 1.0);
+	float alpha = 1.0;
+  gl_FragColor = vec4(vColor, alpha);
 }
 
 </script>
@@ -132,12 +141,13 @@ uniform mat4 u_camera;
 uniform mat4 u_view;
 uniform mat4 u_projection;
 uniform vec3 u_lightPos;
+uniform vec3 u_color;
 uniform float u_playerPos;
 
 varying vec3 interpL;
 varying vec3 interpV;
 varying vec3 interpN;
-varying float v_alpha;
+varying float v_worldy;
 
 void main(void) {
     gl_Position = u_projection * u_view * u_model * vec4(a_position, 1.0);
@@ -148,12 +158,8 @@ void main(void) {
     //interpL = vert - u_lightPos;
     interpV = -vert;
     interpN = vec3(u_view * u_model * vec4(a_normal, 0.0));
-    v_alpha = 1.0;
 		
-		v_alpha = clamp(world.y - u_playerPos, 0.0, 1.0);
-		/*if (world.y < u_playerPos) {
-      v_alpha = 0.0;
-    }*/
+		v_worldy = world.y;
 }
 </script>
     <script>
