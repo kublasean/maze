@@ -3,7 +3,8 @@
     <title>maze</title>
     <script src="arcball.js"></script>
     <script src="dset.js"></script>
-    <script src="mazemake.js"></script>
+    <script src="maze.js"></script>
+    <script src="walls.js"></script>
     <script src="util/sylvester.js"></script>
     <script src="util/gl_util.js"></script>
     <script src="util/gl_transforms.js"></script>
@@ -118,12 +119,12 @@ void main(void){
 
   vec3 vColor = K_a + K_d*clamp(dot(N,L),0.0, 1.0) + K_s*pow(clamp(dot(R,V),0.0, 1.0),n);
   
-	if (u_type == 1.0 && v_worldy+3.1 < u_playerPos) {
-    discard;
-	}
-	if (u_type != 1.0 && v_worldy+3.1 < u_playerPos) {
-		discard;
-	}
+	//if (u_type == 1.0 && v_worldy+3.1 < u_playerPos) {
+    //discard;
+	//}
+	//if (u_type != 1.0 && v_worldy+3.1 < u_playerPos) {
+	//	discard;
+	//}
 	//float alpha = clamp(u_playerPos - v_worldy+2.76, 0.0, 1.0);
 	float alpha = 1.0;
   gl_FragColor = vec4(vColor, alpha);
@@ -159,19 +160,21 @@ void main(void) {
     interpV = -vert;
     interpN = vec3(u_view * u_model * vec4(a_normal, 0.0));
 		
-		v_worldy = world.y;
+    v_worldy = world.y;
 }
 </script>
-    <script>
-      //set up webgl context
-      function setup() {
+<script>
+    var gl=null;
+    
+    //set up webgl context
+    function setup() {
         var canvas = document.getElementById("glcanvas");
-        var gl = canvas.getContext("webgl");
+        gl = canvas.getContext("webgl");
         if (!gl)
-          return;
-        main(gl,5);
-      }
-      setup();
-    </script>
-  </body>
+            return;
+        newRound(3);
+    }
+    setup();
+</script>
+</body>
 </html>

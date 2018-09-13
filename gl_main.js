@@ -1,13 +1,10 @@
 /* globals, GC, init, and the main loop (drawScene) */
-var gl = null;
 var GC = {};
 var keys = [];
 var camera = null;
-//var camera = new ArcBall();
 var shader2D;
-var M = null; //maze
-var W = null; //wall
-var FW = null; //flat wall parts 
+var M = null; 
+
 //graphics context variables
 GC.mouseDown = false;
 GC.width = null;
@@ -21,85 +18,58 @@ GC.test = 3;
 GC.fov = 45;
 GC.lookat = 1;
  
-function main(glcontext) {
-  gl = glcontext;
-  newRound(3);
-}
-
 function exitScene() {
-  clearInterval(GC.game);
-  newRound(M.Nrows+1)
+    clearInterval(GC.game);
+    newRound(M.Nrows+1);
 }
-
 function newRound(N) {
-  M = mazemake(N,N,N);
-  beginDemo()
+    M = Maze.construct(N,N,N);
+    beginDemo()
 }
 
 function beginDemo() {
-  shaderBUN = new Shader("VertexShader_BUN", "FragmentShader_BUN");
-  shaderWALL = new Shader("VertexShader_WALL", "FragmentShader_WALL");
-  W = new Wall(shaderWALL, 5.0,5.0,1.0);
-  F = new Wall(shaderBUN, 5.0,5.0,0.01);
-  F.uniforms.u_color = [0.04136, 0.04136, 0.614];
-  F.rotation[0][0][0] = 0;
-  F.translation[0] = [F.width/2.0+(M.Ncols-1)*F.width,F.width/-2.0,-F.thickness];
-  FW = mazeinit(W);
+    shaderBUN = new Shader("VertexShader_BUN", "FragmentShader_BUN");
+    shaderWALL = new Shader("VertexShader_WALL", "FragmentShader_WALL");
+    
+    Walls.construct(shaderWALL, 5.0,5.0,1.0);
+    
+    console.log(Walls);
 
-  //setup camera
-  PLAYER.init(shaderBUN,M,W);
-  camera = new Camera([0, -W.width*M.Nrows+(M.Nrows-1)*-W.width, 0.0]);
-  //camera = new Camera([-100,-100,0]);
+    PLAYER.init(shaderBUN,M,Walls);
+    camera = new Camera([0, -Walls.width*M.Nrows+(M.Nrows-1)*-Walls.width, 0.0]);
+    //camera = new Camera([-100,-100,0]);
 
+    //setup event callbacks
+    document.onkeydown = keyDown;
+    document.onkeyup = keyUp;
+    window.onresize = windowResize;
+    setMouseEventCallbacks(gl.canvas);
 
-  //setup event callbacks
-  document.onkeydown = keyDown;
-  document.onkeyup = keyUp;
-  window.onresize = windowResize;
-  setMouseEventCallbacks(gl.canvas);
+    gl.clearColor(0.9, 0.9, 0.9, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clearDepth(1.0);
+    gl.enable(gl.DEPTH_TEST);
 
-  gl.clearColor(0.9, 0.9, 0.9, 1.0);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  gl.clearDepth(1.0);
-  gl.enable(gl.DEPTH_TEST);
-
-  mvLoadIdentity(W.rotMat);
-	mvLoadIdentity(FW.rotMat);
-  //mvTranslate([W.center[0]*-1,W.center[1]*-1,W.center[2]*-1], W);
-  GC.game = setInterval(drawScene, 1000.0 / GC.fps);
+    mvLoadIdentity(Walls.rotMat);
+    console.log(Walls);
+    GC.game = setInterval(drawScene, 1000.0 / GC.fps);
 }
 
 function drawScene() {
+    canvasResize();
+    GC.time += 0.001;
 
-  canvasResize();
-  GC.time += 0.001;
+    if (camera.update()) {
+        exitScene();
+        return;
+    }
 
-  if (camera.update()) {
-    exitScene();
-    return;
-  }
-
-  var proj = makePerspective(GC.fov,GC.width / GC.height, GC.near, GC.far);
-  var view = makeLookAt(camera.position[0],camera.position[1],camera.position[2],
+    var proj = makePerspective(GC.fov, GC.width / GC.height, GC.near, GC.far);
+    var view = makeLookAt(camera.position[0],camera.position[1],camera.position[2],
     camera.lookAt[0],camera.lookAt[1],camera.lookAt[2],
     0,0,1);
 
-  var axis = W.rotate();
-	FW.rotate();
-	Model.draw(FW, proj, view);
-	Model.draw(W, proj, view);
-  PLAYER.update(W, axis, proj, view);
-  
-  //W.center = Model.updateWorldPosition(W);
-  //Model.draw(F, proj, view);
-}
-
-function drawwall(w, proj, view) {
-  for (var i=0; i<w.transforms.length; i++) {
-    w.translation[0] = w.transforms[i].trans;
-    w.rotation[0][1][0] = w.transforms[i].rotx;
-    w.rotation[0][0][0] = w.transforms[i].rotz;
-    w.scale_arr = w.transforms[i].sc;
-    Model.draw(W, proj, view);
-  }
+    var axis = Walls.rotate();
+    Walls.update(axis, proj, view);
+    PLAYER.update(Walls, axis, proj, view);
 }
