@@ -91,12 +91,9 @@ newModel: function() {
     center:       [0,0,0,1]
   }
   return mod;
-}
+},
 
-}
-
-
-function buildCubeNorms() {
+getCubeNorms: function() {
   var norms = [
     0,0,1,
     0,0,1,
@@ -141,63 +138,66 @@ function buildCubeNorms() {
     0,-1,0
   ];
   return norms;
+},
+
+getCubeVerts: function(x, y, z) {
+  // Set up the verticies
+  var verts = [
+    //x  y   z
+    // Top
+    -x,  y,  z,
+      x,  y,  z,
+    -x, -y,  z,
+
+      x,  y,  z,
+      x, -y,  z,
+      -x, -y, z,
+
+
+    // Bottom
+      x,  y, -z,
+    -x,  y, -z,
+      x, -y, -z,
+      -x,  y, -z,
+    -x, -y, -z,
+    x, -y, -z,
+
+
+    // Left
+    -x,  y, -z,
+    -x,  y,  z,
+    -x, -y, -z,
+
+    -x,  y,  z,
+    -x, -y,  z,
+    -x, -y, -z,
+
+    // Right
+      x,  y,  z,
+      x,  y, -z,
+      x, -y,  z,
+
+      x,  y,  -z,
+      x, -y, -z,
+      x,  -y, z,
+
+    // Front
+    -x,  y,  z,
+      x,  y,  z,
+    -x,  y, -z,
+    x,  y,  z,
+      x,  y, -z,
+      -x,  y,  -z,
+
+    // Back
+      x, -y,  z,
+    -x, -y,  z,
+      x, -y, -z,
+      -x, -y,  z,
+    -x, -y, -z,
+    x, -y,  -z
+  ];
+  return verts;
 }
-function buildCube(x, y, z) {
-                    // Set up the verticies
-                    var verts = [
-                        //x  y   z
-                        // Top
-                        -x,  y,  z,
-                         x,  y,  z,
-                        -x, -y,  z,
 
-                         x,  y,  z,
-                         x, -y,  z,
-                         -x, -y, z,
-
-
-                        // Bottom
-                         x,  y, -z,
-                        -x,  y, -z,
-                         x, -y, -z,
-                         -x,  y, -z,
-                        -x, -y, -z,
-                        x, -y, -z,
-
-
-                        // Left
-                        -x,  y, -z,
-                        -x,  y,  z,
-                        -x, -y, -z,
-
-                        -x,  y,  z,
-                        -x, -y,  z,
-                        -x, -y, -z,
-
-                        // Right
-                         x,  y,  z,
-                         x,  y, -z,
-                         x, -y,  z,
-
-                         x,  y,  -z,
-                         x, -y, -z,
-                         x,  -y, z,
-
-                        // Front
-                        -x,  y,  z,
-                         x,  y,  z,
-                        -x,  y, -z,
-                        x,  y,  z,
-                         x,  y, -z,
-                         -x,  y,  -z,
-
-                        // Back
-                         x, -y,  z,
-                        -x, -y,  z,
-                         x, -y, -z,
-                         -x, -y,  z,
-                        -x, -y, -z,
-                        x, -y,  -z
-                    ];
-                    return verts;
-                  }
+}// END MODEL

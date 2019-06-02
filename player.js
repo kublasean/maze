@@ -23,8 +23,8 @@ uniforms: {
 
 init: function(shad,M,W) {
     this.shader = shad;
-    verts = buildCube((W.width - W.thickness)/2.0,(W.height-W.thickness)/2.0,(W.width-W.thickness)/2.0);
-    norms = buildCubeNorms();
+    verts = Model.getCubeVerts((W.width - W.thickness)/2.0,(W.height-W.thickness)/2.0,(W.width-W.thickness)/2.0);
+    norms = Model.getCubeNorms();
     this.numtri = verts.length / 3;
     this.attribs.a_position.buffer = getBuffer(verts);
     this.attribs.a_normal.buffer = getBuffer(norms);
@@ -72,7 +72,7 @@ update: function(W, axis, proj, view) {
                 newpos = M.getIndex(Math.max(lrc[0]+dir.elements[i],0), lrc[1], lrc[2]);
             break;
         }
-        if (newpos >= 0 && newpos < M.Nrows*M.Ncols*M.Nlayers && positionOkay(this.pos, newpos)) {
+        if (newpos >= 0 && newpos < M.Nrows*M.Ncols*M.Nlayers /*&& positionOkay(this.pos, newpos)*/) {
             this.moveCount = step;
             this.pos = newpos;
         }
@@ -82,8 +82,12 @@ update: function(W, axis, proj, view) {
         this.moveCount %= 60;
     }
 
+    this.calcPosition(W);
+    W.u_playerPos = this.wp[1];
+    Model.draw(this,proj,view);
+
     //draw whole chain
-    this.previous.push(this.pos);
+    /*this.previous.push(this.pos);
     
     var max_seg = 5;
     while (this.previous.length > max_seg) {
@@ -99,7 +103,7 @@ update: function(W, axis, proj, view) {
         this.uniforms.u_color = this.uniforms.u_color.map(x => x*1.5);
         Model.draw(this,proj,view);
     }
-    this.pos = this.previous.pop();
+    this.pos = this.previous.pop();*/
 },
 
 calcPosition: function(W) {

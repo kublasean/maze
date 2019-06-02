@@ -17,6 +17,7 @@ GC.time = 0;
 GC.test = 3;
 GC.fov = 45;
 GC.lookat = 1;
+GC.shell = 0;
  
 function exitScene() {
     clearInterval(GC.game);
@@ -70,6 +71,6 @@ function drawScene() {
     0,0,1);
 
     var axis = Walls.rotate();
-    Walls.update(axis, proj, view);
+    Walls.update(axis, proj, view, PLAYER.pos);
     PLAYER.update(Walls, axis, proj, view);
 }

@@ -14,6 +14,17 @@ height: null,
 thickness: null,
 center: null,
 
+getShell: function(lrc) {
+    for (var i=0; i<M.Nrows/2; i++) {
+        for (var j=0; j<3; j++) {
+            if (lrc[j] == i || lrc[j] == M.Nrows-1-i) {
+                return i;
+            }
+        }
+    }
+    return 0;
+},
+
 //relies on the global M to be a maze object    
 construct: function(shader,x,y,z) {
     var dummy = Model.newModel();
@@ -23,8 +34,8 @@ construct: function(shader,x,y,z) {
     this.height = y;
     this.thickness = z;
 
-    dummy.verts = buildCube((x+z)/2.0,(y+z)/2.0,z/2.0);
-    dummy.norms = buildCubeNorms();
+    dummy.verts = Model.getCubeVerts((x+z)/2.0,(y+z)/2.0,z/2.0);
+    dummy.norms = Model.getCubeNorms();
     dummy.rotation =     [ [[90,[1,0,0]], [0,[0,1,0]], [0,[0,0,1]]], [[0,[0,0,1]]] ];
     
     this.center = [M.Ncols*x/2.0,M.Nrows*x/-2.0,M.Nlayers*x/2.0];
@@ -39,7 +50,7 @@ newWallLayer: function(depth,w) {
     wl.norms = [];
     wl.depth = depth;
     wl.center = [M.Ncols*w/2.0,M.Nrows*w/-2.0,M.Nlayers*w/2.0];
-    wl.uniforms = { u_type: 0.0, u_color: [1./(depth+1), 10./(depth+1), 1./(depth+1)] }
+    wl.uniforms = { u_type: 0.0, u_color: [108.0/255.0, 204.0/255.0, 200.0/255.0] }
     return wl;
 },
 
@@ -61,15 +72,17 @@ newWallType: function(w) {
 },
 
 setwalls: function(width,height,wallModel) {
-    var flat = this.newWallType(width);
-    var side = this.newWallType(width);
-    var all = this.newWallLayer(0,width);
+    var shells = [];
+    for (var i=0; i<M.Nrows / 2; i++) {
+        shells.push( this.newWallLayer(i, width) );
+    }
+    
             
     for (var i=0; i<M.walls.length; i++) {
         var a = M.walls[i].a;
         var b = M.walls[i].b;
         var t = {};
-        var row, col, lay, id, depth;
+        var row, col, lay;
         var lrc = M.getLRC(a);
         lay = lrc[0];
         row = lrc[1];
@@ -90,8 +103,6 @@ setwalls: function(width,height,wallModel) {
                 t.trans[0] += width/2.0;
                 t.trans[1] += width/-2.0;
                 t.trans[2] += 0;
-                id = 0;
-                depth = lay;
                 break;
             case M.getIndex(lay+1, row, col):
                 t.rotx = 0;
@@ -99,8 +110,6 @@ setwalls: function(width,height,wallModel) {
                 t.trans[0] += width/2.0;
                 t.trans[1] += width/-2.0;
                 t.trans[2] += width;
-                id = 0;
-                depth = lay;
                 break;
             case M.getIndex(lay, row-1, col):
                 t.rotx = 0;
@@ -108,8 +117,6 @@ setwalls: function(width,height,wallModel) {
                 t.trans[0] += width/2.0;
                 t.trans[1] -= 0;
                 t.trans[2] += width/2.0;
-                id = 1;
-                depth = row;
                 break;
             case M.getIndex(lay, row+1, col):
                 t.rotx = 0;
@@ -117,8 +124,6 @@ setwalls: function(width,height,wallModel) {
                 t.trans[0] += width/2.0;
                 t.trans[1] -= width;
                 t.trans[2] += width/2.0;
-                id = 1;
-                depth = row;
                 break;
             case M.getIndex(lay, row, col-1):
                 t.rotx = 90;
@@ -126,8 +131,6 @@ setwalls: function(width,height,wallModel) {
                 t.trans[0] += 0;
                 t.trans[1] += width/-2.0;
                 t.trans[2] += width/2.0;
-                id = 2;
-                depth = col;
                 break;
             case M.getIndex(lay, row, col+1):
                 t.rotx = 90;
@@ -135,8 +138,6 @@ setwalls: function(width,height,wallModel) {
                 t.trans[0] += width;
                 t.trans[1] += width/-2.0;
                 t.trans[2] += width/2.0;
-                id = 2;
-                depth = col;
                 break;
             default:
                 console.log("ERROR not adjacent");
@@ -149,52 +150,28 @@ setwalls: function(width,height,wallModel) {
         wallModel.translation[1] = t.trans;
         mvLoadIdentity(wallModel);
         Model.objectTransforms(wallModel);
-                
-        //apply the transformation, push the resulting verts and norms to diff wall types
+
+        var limits = [M.Nlayers-1, M.Nrows-1, M.Ncols-1];
+        var alrc = M.getLRC(a);
+        var blrc = M.getLRC(b);
+
+        var k = this.getShell(alrc);
         for (var j=0; j<wallModel.verts.length; j+=3) {
             var v = wallModel.mvMatrix.x($M([wallModel.verts[j],wallModel.verts[j+1],wallModel.verts[j+2],1.0])).flatten().slice(0,3);
             var n = wallModel.mvMatrix.x($M([wallModel.norms[j],wallModel.norms[j+1],wallModel.norms[j+2],0.0])).flatten().slice(0,3);
-
-            all.verts.push(v[0],v[1],v[2]);
-            all.norms.push(n[0],n[1],n[2]);
-
-            if (j >= 3 * 6 * 2) {
-                flat[id][depth].verts.push(v[0],v[1],v[2]);
-                flat[id][depth].norms.push(n[0],n[1],n[2]);
-            }
-            else {
-                side[id][depth].verts.push(v[0],v[1],v[2]);
-                side[id][depth].norms.push(n[0],n[1],n[2]);
-            }
+            shells[k].verts.push(v[0],v[1],v[2]);
+            shells[k].norms.push(n[0],n[1],n[2]);
         }
     }
     
-    //set attribute buffers now that we have all verts and norms
-    all.attribs = { a_position: { buffer: getBuffer(all.verts), numComponents: 3 }, a_normal: { buffer: getBuffer(all.norms), numComponents: 3 }}
-    all.shader = this.shader;
-    all.numtri = all.verts.length / 3;
+    for (var i=0; i<shells.length; i++) {
+        var all = shells[i];
+        all.attribs = { a_position: { buffer: getBuffer(all.verts), numComponents: 3 }, a_normal: { buffer: getBuffer(all.norms), numComponents: 3 }}
+        all.shader = this.shader;
+        all.numtri = all.verts.length / 3;
+    }
  
-    for (var i=0; i<3; i++) {
-        for (var j=0; j<flat[i].length; j++) {
-            flat[i][j].attribs = { a_position: { buffer: getBuffer(flat[i][j].verts), numComponents: 3 },
-                a_normal: { buffer: getBuffer(flat[i][j].norms), numComponents: 3 } };
-            flat[i][j].numtri = flat[i][j].verts.length / 3;
-            flat[i][j].uniforms.u_type = 0.0;
-            flat[i][j].shader = this.shader;
-        }
-    }
-   for (var i=0; i<3; i++) {
-        for (var j=0; j<side[i].length; j++) {
-            side[i][j].attribs = { a_position: { buffer: getBuffer(side[i][j].verts), numComponents: 3 },
-                a_normal: { buffer: getBuffer(side[i][j].norms), numComponents: 3 } };
-            side[i][j].numtri = side[i][j].verts.length / 3;
-            side[i][j].uniforms.u_type = 1.0;
-            side[i][j].shader = this.shader;
-        }
-    }
-    this.flat = flat;
-    this.side = side;
-    this.all = all;
+    this.shells = shells;
 },
 
 // rotate the maze, return new orientation
@@ -269,15 +246,21 @@ rotate: function() {
     return {x: xaxis, z: zaxis}
 },
 
-update: function(axis, proj, view) {
+update: function(axis, proj, view, player_pos) {
     var drawMe = null;
     
-    if (this.rotLeftRight || this.rotUpDown) {
+    /*if (this.rotLeftRight || this.rotUpDown) {
         drawMe = this.all;
     }
     else {
         drawMe = this.side[0][1];
-    }
+    }*/
+    var shell = this.getShell(M.getLRC(player_pos));
+    console.log(shell);
+    //shell = this.shells.length-1;
+    drawMe = this.shells[shell];
+
+    
     
     mvLoadIdentity(drawMe);
     mvTranslate([drawMe.center[0]*-1, drawMe.center[1]*-1, drawMe.center[2]*-1], drawMe);
