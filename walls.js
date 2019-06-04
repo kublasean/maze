@@ -50,7 +50,7 @@ newWallLayer: function(depth,w) {
     wl.norms = [];
     wl.depth = depth;
     wl.center = [M.Ncols*w/2.0,M.Nrows*w/-2.0,M.Nlayers*w/2.0];
-    wl.uniforms = { u_type: 0.0, u_color: [108.0/255.0, 204.0/255.0, 200.0/255.0] }
+    wl.uniforms = { u_type: 0.0, u_color: [108.0/255.0, 204.0/255.0, 200.0/255.0, 1.0] }
     return wl;
 },
 
@@ -73,8 +73,9 @@ newWallType: function(w) {
 
 setwalls: function(width,height,wallModel) {
     var shells = [];
+    var alpha = 0.3;
     for (var i=0; i<M.Nrows / 2; i++) {
-        shells.push( this.newWallLayer(i, width) );
+        shells.push( this.newWallLayer(i*alpha+0.1, width) );
     }
     
             
@@ -258,14 +259,20 @@ update: function(axis, proj, view, player_pos) {
     var shell = this.getShell(M.getLRC(player_pos));
     console.log(shell);
     //shell = this.shells.length-1;
-    drawMe = this.shells[shell];
 
-    
-    
-    mvLoadIdentity(drawMe);
-    mvTranslate([drawMe.center[0]*-1, drawMe.center[1]*-1, drawMe.center[2]*-1], drawMe);
-    drawMe.mvMatrix = this.rotMat.mvMatrix.x(drawMe.mvMatrix);
-    Model.draw(drawMe, proj, view);
+    for (var i=this.shells.length-1; i>=0; i--) {
+        drawMe = this.shells[i];
+        if (i >= shell) {
+            drawMe.uniforms.u_color[3] = 1.0;
+        }
+        else {
+            drawMe.uniforms.u_color[3] = 0.1;
+        }
+        mvLoadIdentity(drawMe);
+        mvTranslate([drawMe.center[0]*-1, drawMe.center[1]*-1, drawMe.center[2]*-1], drawMe);
+        drawMe.mvMatrix = this.rotMat.mvMatrix.x(drawMe.mvMatrix);
+        Model.draw(drawMe, proj, view);
+    }
 }
 
 }

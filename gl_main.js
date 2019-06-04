@@ -46,19 +46,25 @@ function beginDemo() {
     window.onresize = windowResize;
     setMouseEventCallbacks(gl.canvas);
 
-    gl.clearColor(0.9, 0.9, 0.9, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clearColor(0.7, 0.7, 0.7, 1.0);
     gl.clearDepth(1.0);
     gl.enable(gl.DEPTH_TEST);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.enable(gl.BLEND);
 
     mvLoadIdentity(Walls.rotMat);
     console.log(Walls);
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     GC.game = setInterval(drawScene, 1000.0 / GC.fps);
 }
 
 function drawScene() {
+    gl.clear(gl.COLOR_BUFFER_BIT);
     canvasResize();
     GC.time += 0.001;
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     if (camera.update()) {
         exitScene();
@@ -71,6 +77,9 @@ function drawScene() {
     0,0,1);
 
     var axis = Walls.rotate();
-    Walls.update(axis, proj, view, PLAYER.pos);
     PLAYER.update(Walls, axis, proj, view);
+    Walls.update(axis, proj, view, PLAYER.pos);
+    
+
+    
 }
