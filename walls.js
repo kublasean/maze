@@ -48,36 +48,18 @@ newWallLayer: function(depth,w) {
     var wl = Model.newModel();
     wl.verts = [];
     wl.norms = [];
+    wl.type = [];
     wl.depth = depth;
     wl.center = [M.Ncols*w/2.0,M.Nrows*w/-2.0,M.Nlayers*w/2.0];
-    wl.uniforms = { u_type: 0.0, u_color: [108.0/255.0, 204.0/255.0, 200.0/255.0, 1.0] }
+    wl.uniforms = { u_color: [108.0/255.0, 204.0/255.0, 200.0/255.0, 1.0] }
     return wl;
-},
-
-newWallCollection: function(w) {
-    var wc = [];
-    for (var i=0; i<M.Nrows; i++) {
-        wc.push( this.newWallLayer(i,w) );
-    }
-    return wc;
-},
-
-newWallType: function(w) {
-    var wt = [
-        this.newWallCollection(w), //frontback
-        this.newWallCollection(w), //leftright
-        this.newWallCollection(w)  //topbottom
-    ]
-    return wt;
 },
 
 setwalls: function(width,height,wallModel) {
     var shells = [];
-    var alpha = 0.3;
     for (var i=0; i<M.Nrows / 2; i++) {
-        shells.push( this.newWallLayer(i*alpha+0.1, width) );
+        shells.push( this.newWallLayer(i, width) );
     }
-    
             
     for (var i=0; i<M.walls.length; i++) {
         var a = M.walls[i].a;
@@ -162,12 +144,23 @@ setwalls: function(width,height,wallModel) {
             var n = wallModel.mvMatrix.x($M([wallModel.norms[j],wallModel.norms[j+1],wallModel.norms[j+2],0.0])).flatten().slice(0,3);
             shells[k].verts.push(v[0],v[1],v[2]);
             shells[k].norms.push(n[0],n[1],n[2]);
+
+            if (j >= 3 * 6 * 2) {
+                shells[k].type.push(0);
+            }
+            else {
+                shells[k].type.push(1);
+            }
         }
     }
     
     for (var i=0; i<shells.length; i++) {
         var all = shells[i];
-        all.attribs = { a_position: { buffer: getBuffer(all.verts), numComponents: 3 }, a_normal: { buffer: getBuffer(all.norms), numComponents: 3 }}
+        all.attribs = { 
+                a_position: { buffer: getBuffer(all.verts), numComponents: 3 },
+                a_normal: { buffer: getBuffer(all.norms), numComponents: 3 },
+                a_type: { buffer: getBuffer(all.type), numComponents: 1}
+        }
         all.shader = this.shader;
         all.numtri = all.verts.length / 3;
     }
@@ -247,31 +240,28 @@ rotate: function() {
     return {x: xaxis, z: zaxis}
 },
 
-update: function(axis, proj, view, player_pos) {
-    var drawMe = null;
-    
-    /*if (this.rotLeftRight || this.rotUpDown) {
-        drawMe = this.all;
-    }
-    else {
-        drawMe = this.side[0][1];
-    }*/
+update: function(axis, proj, view, player_pos) {  
     var shell = this.getShell(M.getLRC(player_pos));
-    console.log(shell);
-    //shell = this.shells.length-1;
+    var alpha = 0.1;
 
     for (var i=this.shells.length-1; i>=0; i--) {
-        drawMe = this.shells[i];
+        var drawMe = this.shells[i];
+        drawMe.uniforms.u_lightPos = GC.u_lightPos;
+        //drawMe.uniforms.u_color = GC.u_color;
         if (i >= shell) {
             drawMe.uniforms.u_color[3] = 1.0;
         }
         else {
-            drawMe.uniforms.u_color[3] = 0.1;
+            drawMe.uniforms.u_color[3] = alpha;
         }
         mvLoadIdentity(drawMe);
         mvTranslate([drawMe.center[0]*-1, drawMe.center[1]*-1, drawMe.center[2]*-1], drawMe);
         drawMe.mvMatrix = this.rotMat.mvMatrix.x(drawMe.mvMatrix);
         Model.draw(drawMe, proj, view);
+
+        if (i < shell) {
+            break;
+        }
     }
 }
 

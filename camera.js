@@ -84,7 +84,7 @@ function Camera (pos) {
         //var sc = GC.test;
         //var newPos = [sc*move.elements[0]+this.position[0],sc*move.elements[1]+this.position[1],sc*move.elements[2]+this.position[2]];
         //var newPos = [this.base[0], this.base[1] + ]
-        if (PLAYER.wp != null) {
+        /*if (PLAYER.wp != null) {
             if (firsttime == true) {
                 offset = PLAYER.wp[1] - base[1];
                 firsttime = false;
@@ -94,7 +94,7 @@ function Camera (pos) {
             if (Math.abs(diff) > 0.5) {
                 this.position[1] += diff * 0.25;
             }
-        }
+        }*/
 
         //this.position = newPos;
 

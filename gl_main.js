@@ -17,7 +17,8 @@ GC.time = 0;
 GC.test = 3;
 GC.fov = 45;
 GC.lookat = 1;
-GC.shell = 0;
+GC.u_lightPos = [0, 0, 0];
+GC.u_color = [0.1, 0.1, 0.1];
  
 function exitScene() {
     clearInterval(GC.game);

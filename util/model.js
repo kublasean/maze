@@ -43,7 +43,7 @@ draw: function(model, proj, view) {
   if (model.points)
     gl.drawArrays(gl.LINE_STRIP, 0, model.numtri);
   else
-  gl.drawArrays(gl.TRIANGLES, 0, model.numtri);
+    gl.drawArrays(gl.TRIANGLES, 0, model.numtri);
 },
 
 updateActions: function(model) {

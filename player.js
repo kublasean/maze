@@ -72,7 +72,7 @@ update: function(W, axis, proj, view) {
                 newpos = M.getIndex(Math.max(lrc[0]+dir.elements[i],0), lrc[1], lrc[2]);
             break;
         }
-        if (newpos >= 0 && newpos < M.Nrows*M.Ncols*M.Nlayers /*&& positionOkay(this.pos, newpos)*/) {
+        if (newpos >= 0 && newpos < M.Nrows*M.Ncols*M.Nlayers && positionOkay(this.pos, newpos)) {
             this.moveCount = step;
             this.pos = newpos;
         }

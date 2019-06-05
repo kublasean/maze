@@ -93,11 +93,9 @@ precision mediump float;
 varying vec3 interpL;
 varying vec3 interpV;
 varying vec3 interpN;
-varying float v_worldy;
+varying float type;
 
 uniform vec4 u_color;
-uniform float u_type; //1=side 0=flat
-uniform float u_playerPos;
 
 vec3 K_a = vec3(0.01745, 0.01175, 0.01175);
 vec3 K_s = vec3(0.0, 0.0, 0.0);
@@ -112,7 +110,7 @@ void main(void){
 
     vec3 vColor = K_a + K_d*clamp(dot(N,L),0.0, 1.0) + K_s*pow(clamp(dot(R,V),0.0, 1.0),n);
     
-    gl_FragColor = vec4(vColor, u_color.a);
+    gl_FragColor = vec4(vColor * (type/2.0 + 0.5), u_color.a);
 }
 
 </script>
@@ -120,6 +118,7 @@ void main(void){
 
 attribute vec3 a_position;
 attribute vec3 a_normal;
+attribute float a_type;
 
 precision mediump float;
 uniform mat4 u_model;
@@ -128,24 +127,21 @@ uniform mat4 u_view;
 uniform mat4 u_projection;
 uniform vec3 u_lightPos;
 uniform vec4 u_color;
-uniform float u_playerPos;
 
 varying vec3 interpL;
 varying vec3 interpV;
 varying vec3 interpN;
-varying float v_worldy;
+varying float type;
 
 void main(void) {
     gl_Position = u_projection * u_view * u_model * vec4(a_position, 1.0);
 
     vec3 vert = (u_view * u_model * vec4(a_position,1.0)).xyz;
-    vec3 world = (u_model * vec4(a_position,1.0)).xyz;
+    //vec3 world = (u_model * vec4(a_position,1.0)).xyz;
     interpL = u_lightPos - vert;
-    //interpL = vert - u_lightPos;
     interpV = -vert;
-    interpN = vec3(u_view * u_model * vec4(a_normal, 0.0));
-        
-    v_worldy = world.y;
+    interpN = vec3(u_view * u_model * vec4(a_normal, 0.0));      
+    type = a_type;
 }
 </script>
 <script>
