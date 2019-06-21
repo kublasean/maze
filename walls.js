@@ -138,7 +138,11 @@ setwalls: function(width,height,wallModel) {
         var alrc = M.getLRC(a);
         var blrc = M.getLRC(b);
 
-        var k = this.getShell(alrc);
+        var k = Math.min(this.getShell(alrc), this.getShell(blrc));
+        var same = false;
+        if (this.getShell(alrc) == this.getShell(blrc)) {
+            same = true;
+        }
         for (var j=0; j<wallModel.verts.length; j+=3) {
             var v = wallModel.mvMatrix.x($M([wallModel.verts[j],wallModel.verts[j+1],wallModel.verts[j+2],1.0])).flatten().slice(0,3);
             var n = wallModel.mvMatrix.x($M([wallModel.norms[j],wallModel.norms[j+1],wallModel.norms[j+2],0.0])).flatten().slice(0,3);
@@ -242,14 +246,17 @@ rotate: function() {
 
 update: function(axis, proj, view, player_pos) {  
     var shell = this.getShell(M.getLRC(player_pos));
-    var alpha = 0.1;
+    var alpha = 0.2;
 
     for (var i=this.shells.length-1; i>=0; i--) {
         var drawMe = this.shells[i];
         drawMe.uniforms.u_lightPos = GC.u_lightPos;
-        //drawMe.uniforms.u_color = GC.u_color;
+        //drawMe.uniforms.u_color[0] = 1.0*i/this.shells.length / 2.0;
+        //drawMe.uniforms.u_color[1] = 1.0*i/this.shells.length / 2.0;
+        //drawMe.uniforms.u_color[2] = 1.0*i/this.shells.length / 2.0;
+        
         if (i >= shell) {
-            drawMe.uniforms.u_color[3] = 1.0;
+            drawMe.uniforms.u_color[3] = 1;
         }
         else {
             drawMe.uniforms.u_color[3] = alpha;

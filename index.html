@@ -44,9 +44,8 @@ varying vec3 interpV;
 varying vec3 interpN;
 uniform vec3 u_color;
 
-vec3 K_a = vec3(0.1745, 0.01175, 0.01175);
-    //vec3 K_d = vec3(0.61424, 0.04136, 0.04136);
-    vec3 K_s = vec3(0.727811, 0.626959, 0.626959);
+vec3 K_a = vec3(0.01745, 0.01175, 0.01175);
+vec3 K_s = vec3(0.0, 0.0, 0.0);
 float n = 0.6;
 
 void main(void){
@@ -79,7 +78,7 @@ void main(void) {
     vec3 vert = (u_view * u_model * vec4(a_position,1.0)).xyz;
 
     interpL = u_lightPos - vert;
-            //interpL = vert - u_lightPos;
+    //interpL = vert - u_lightPos;
     interpV = -vert;
     interpN = vec3(u_view * u_model * vec4(a_normal, 0.0));
 }
@@ -109,7 +108,6 @@ void main(void){
     vec3 K_d = u_color.xyz;
 
     vec3 vColor = K_a + K_d*clamp(dot(N,L),0.0, 1.0) + K_s*pow(clamp(dot(R,V),0.0, 1.0),n);
-    
     gl_FragColor = vec4(vColor * (type/2.0 + 0.5), u_color.a);
 }
 
